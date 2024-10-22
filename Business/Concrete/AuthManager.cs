@@ -1,6 +1,7 @@
 ﻿using Business.Abstract;
 using Business.Messages;
 using Business.Validations.FluentValidation;
+using Core.Aspects.Autofac.Validation;
 using Core.Entities.Concrete;
 using Core.Utilities.Message.Abstract;
 using Core.Utilities.Results.Abstract;
@@ -119,16 +120,9 @@ namespace Business.Concrete
             return Math.Abs(value % 900000).ToString("D6");
         }
 
+        [ValidationAspect(typeof(RegisterValidation))]
         public async Task<IResult> RegisterAsync(RegisterDTO model)
         {
-            var validator = new RegisterValidation();
-            var validationResult = validator.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                Log.Error(validationResult.ToString());
-                return new ErrorResult(message: validationResult.ToString(), HttpStatusCode.BadRequest);
-            }
-
             User newUser = new()
             {
                 FirstName = model.FirstName,
@@ -187,15 +181,15 @@ namespace Business.Concrete
         public async Task<IResult> UserEmailConfirmed(string email, string otp)
         {
             var findUser = _userManager.Users.OfType<User>().FirstOrDefault(x => x.Email == email);
-            
-            if(findUser.OTP == otp && findUser.ExpiredDate > DateTime.Now)
+
+            if (findUser.OTP == otp && findUser.ExpiredDate > DateTime.Now)
             {
-                findUser.EmailConfirmed = true; 
+                findUser.EmailConfirmed = true;
                 await _userManager.UpdateAsync(findUser);
                 return new SuccessResult(HttpStatusCode.OK);
             }
-            
-                return new ErrorResult(HttpStatusCode.BadRequest);
+
+            return new ErrorResult(HttpStatusCode.BadRequest);
         }
     }
 }

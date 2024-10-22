@@ -1,9 +1,10 @@
-using Asp.Versioning.ApiExplorer;
 using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Business.DependencyResolver;
 using Business.Utilities.Storage.Concrete.AwsStorage;
 using Core.DependencyResolver;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -14,6 +15,14 @@ using WebAPI.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
+    .ConfigureContainer<ContainerBuilder>(options =>
+    {
+        options.RegisterModule(new AutofacBusinessModule());
+    });
+
+
 builder.Services.AddBusinessService();
 builder.Services.AddCoreService();
 builder.Services.AddStorageService<AwsStorage>();
@@ -27,6 +36,12 @@ builder.Services.AddCors(x => x.AddPolicy("Policy", policyBuilder =>
     .AllowAnyHeader()
     .SetIsOriginAllowed(origin => true);
 }));
+
+
+
+
+
+
 #region API Versioning
 builder.Services.AddApiVersioning(options =>
 {
@@ -110,10 +125,10 @@ builder.Services.AddAuthentication(auth =>
 
 
 
-FluentValidationMvcExtensions.AddFluentValidation(builder.Services.AddControllersWithViews(), x =>
-{
-    x.RegisterValidatorsFromAssemblyContaining<Program>();
-});
+//FluentValidationMvcExtensions.AddFluentValidation(builder.Services.AddControllersWithViews(), x =>
+//{
+//    x.RegisterValidatorsFromAssemblyContaining<Program>();
+//});
 
 
 

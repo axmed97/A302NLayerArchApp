@@ -21,6 +21,24 @@ namespace WebAPI.Middlewares
             {
                 await next(context);
             }
+            catch (HttpRequestException ex)
+            {
+                //_logger.LogError(ex, ex.Message);
+                Log.Error(ex, ex.Message);
+                context.Response.StatusCode = (int)ex.StatusCode;
+
+                ProblemDetails details = new()
+                {
+                    Status = (int)ex.StatusCode,
+                    Title = ex.HttpRequestError.ToString(),
+                    Type = ex.InnerException.Message,
+                    Detail = ex.Message
+                };
+
+                var json = JsonSerializer.Serialize(details);
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(json);
+            }
             catch (Exception ex)
             {
                 //_logger.LogError(ex, ex.Message);

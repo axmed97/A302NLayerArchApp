@@ -18,7 +18,7 @@ namespace Business.DependencyResolver
     {
         public static void AddBusinessService(this IServiceCollection services)
         {
-            // IoC  - Invertion of Container
+            // IoC  -  Inversion of Control container
             services.AddScoped<AppDbContext>();
 
             services.AddScoped<ICategoryService, CategoryManager>();
